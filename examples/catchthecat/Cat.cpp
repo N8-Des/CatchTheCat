@@ -11,29 +11,62 @@ Point2D Cat::Move(World* world) {
 
   struct HexTile
   {
+   public: 
     Point2D startPosition;
     Point2D nextPosition;
-    int length;
+    int length = 0;
+    HexTile();
+    bool operator<(const HexTile& rhs) const
+    {
+      return startPosition.x + startPosition.y <
+             rhs.startPosition.x + rhs.startPosition.y;
+    }
   };
 
   //so basically use a vector and use the HexTile as the queue instead of Point2D. Populate the vector. 
-  std::vector<std::vector<bool>> cameFrom;
-  std::queue<Point2D> frontier;
-  frontier.push(pos);
+  std::unordered_map<Point2D, bool> hasVisited;
+  std::priority_queue<HexTile> frontier;
+  std::vector<HexTile> cameFrom;
+  //so since point2d doesn't have a constructor, I had to do some stuff. 
+  int finalPosX;
+  int finalPosY;
+  Point2D final{0,0};
+  HexTile hex{};
+  hex.startPosition = pos;
+  hex.length = 0;
+  frontier.push(hex);
+  //populate the vector I think? 
+
   while (!frontier.empty()) 
   {
-    Point2D curr = frontier.front();
+    Point2D curr = frontier.top().startPosition;
+    HexTile thisHex = frontier.top();
     frontier.pop();
     
     //populate queue in a very silly way
-    frontier.push(world->E(curr));
-    frontier.push(world->NE(curr));
-    frontier.push(world->NW(curr));
-    frontier.push(world->SE(curr));
-    frontier.push(world->SW(curr));
-    frontier.push(world->W(curr));
+    Point2D arr[6] = {world->E(curr),  world->NE(curr), world->NW(curr),
+                      world->SE(curr), world->SW(curr), world->W(curr)};
 
     //next, go through them all 
+    for (int i = 0; i < 6; i++) {
+      Point2D next = arr[i];
+      if (!hasVisited[next]) 
+      {
+        hasVisited[next] = true;
+        HexTile hex{};
+        hex.startPosition = curr;
+        hex.nextPosition = next;        
+        cameFrom.push_back(hex);
+
+        HexTile nextHex{};
+        nextHex.startPosition = next;
+        nextHex.length = thisHex.length += 1;
+        frontier.push(nextHex);
+      }
+    }
+
+    //time to go back.
+
 
 
   }

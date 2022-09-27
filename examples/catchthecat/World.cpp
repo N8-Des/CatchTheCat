@@ -159,6 +159,11 @@ void World::OnGui(ImGuiContext *context) {
     ImGui::SameLine();
     if(ImGui::Button("Pause")) {
       isSimulating = false;
+    
+    }
+    if (ImGui::Button("Print"))
+    {
+      print();
     }
     ImGui::End();
 }
