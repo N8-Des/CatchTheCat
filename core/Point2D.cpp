@@ -1,6 +1,8 @@
 #include "Point2D.h"
+#include <iostream>
 
-bool Point2D::operator==(const Point2D& rhs) const {
+bool Point2D::operator==(const Point2D& rhs) const 
+{
     return y == rhs.y && x==rhs.x;
 }
 

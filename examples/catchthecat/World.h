@@ -94,6 +94,8 @@ class World: GameObject {
   void Update(float deltaTime) override;
 
   void step();
+
+  bool catWinsOnSpace(Point2D point);
 };
 
 #endif  // WORLD_H
