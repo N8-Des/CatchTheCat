@@ -57,72 +57,78 @@ struct HexTile {
   };
 
 Point2D Cat::Move(World* world) {
-  auto rand = Random::Range(0,5);
-  auto pos = world->getCat();
+    auto rand = Random::Range(0, 5);
+    auto pos = world->getCat();
 
-  std::unordered_map<int, std::unordered_map<int, bool>> hasVisited;
-  PriorityQueue<HexTile, int> frontier;
-  std::vector<HexTile> cameFrom;
+    std::unordered_map<int, std::unordered_map<int, bool>> hasVisited;
+    PriorityQueue<HexTile, int> frontier;
+    std::vector<HexTile> cameFrom;
 
-  Point2D finalPoint{0,0};
-  HexTile lastHex{};
-  lastHex.startPosition = pos;
-  lastHex.nextPosition = pos;
-  lastHex.length = 0;
-  frontier.put(lastHex, 0);
-  cameFrom.push_back(lastHex);
-  bool end = false;
-  do {
-    // grab the top point
-    HexTile thisHex = frontier.get();
-    Point2D curr = thisHex.startPosition;
-
-    // populate queue in a very silly way
-    Point2D arr[6] = {world->E(curr),  world->NE(curr), world->NW(curr),
-                      world->SE(curr), world->SW(curr), world->W(curr)};
-
-    int nextAmt = 0;
-    // next, go through them all
-    for (int i = 0; i < 6; i++) {
-      Point2D next = arr[i];
-      if (!hasVisited[next.y][next.x] && !world->getContent(next)) 
-      {
-        hasVisited[next.y][next.x] = true;
-        HexTile newHex{};
-        newHex.startPosition = curr;
-        newHex.nextPosition = next;
-        if (!world->isValidPosition(next)) 
+    Point2D finalPoint = pos;
+    HexTile lastHex{};
+    lastHex.startPosition = pos;
+    lastHex.nextPosition = pos;
+    lastHex.length = 0;
+    frontier.put(lastHex, 0);
+    cameFrom.push_back(lastHex);
+    bool end = false;
+    do {
+        if (frontier.empty()) 
         {
-          newHex.isEnd = true;
-          //cameFrom.push_back(newHex);
           end = true;
-          finalPoint = curr;
-          break;
+        }
+      // grab the top point
+      HexTile thisHex = frontier.get();
+      Point2D curr = thisHex.startPosition;
+
+      // populate queue in a very silly way
+      Point2D arr[6] = {world->E(curr),  world->NE(curr), world->NW(curr),
+                        world->SE(curr), world->SW(curr), world->W(curr)};
+
+      int nextAmt = 0;
+      // next, go through them all
+      for (int i = 0; i < 6; i++) 
+      {
+        Point2D next = arr[i];
+        if (world->isValidPosition(next)) 
+        {
+          if (!hasVisited[next.y][next.x] && !world->getContent(next)) 
+          {
+            hasVisited[next.y][next.x] = true;
+            HexTile newHex{};
+            newHex.startPosition = curr;
+            newHex.nextPosition = next;
+            cameFrom.push_back(newHex);
+            HexTile nextHex{};
+            nextHex.startPosition = next;
+            nextHex.length = thisHex.length += 1;
+            frontier.put(nextHex, nextHex.length + 1);
+          }
         } 
         else 
         {
-          cameFrom.push_back(newHex);
+          HexTile newHex{};
+          newHex.startPosition = curr;
+          newHex.nextPosition = next;
+          newHex.isEnd = true;
+          // cameFrom.push_back(newHex);
+          end = true;
+          finalPoint = curr;
+          break;
         }
-
-        HexTile nextHex{};
-        nextHex.startPosition = next;
-        nextHex.length = thisHex.length += 1;
-        frontier.put(nextHex, nextHex.length + 1);
       }
-    }
-  } while (!end);
+    } while (!end);
     std::vector<Point2D> path;
     Point2D current = finalPoint;
-    if (cameFrom.back().startPosition == finalPoint) 
+    if (pos == finalPoint) 
     {
-        //point can't be found!
-        std::cout << "point cannot be found";
-        return pos;
+      // point can't be found!
+      std::cout << "point cannot be found";
+      return pos;
     }
-    while (current != pos) 
-    {
+    while (current != pos) {
       path.push_back(current);
       current = GetValue(current, cameFrom);
-    } 
+    }
     return path[path.size() - 1];
-}
+  };

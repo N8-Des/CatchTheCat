@@ -66,6 +66,9 @@ Point2D Catcher::Move(World* world) {
   cameFrom.push_back(lastHex);
   bool end = false;
   do {
+    if (frontier.empty()) {
+      end = true;
+    }
     // grab the top point
     HexagonTile thisHex = frontier.get();
     Point2D curr = thisHex.startPosition;
@@ -78,31 +81,34 @@ Point2D Catcher::Move(World* world) {
     // next, go through them all
     for (int i = 0; i < 6; i++) {
       Point2D next = arr[i];
-      if (!hasVisited[next.y][next.x] && !world->getContent(next)) {
-        hasVisited[next.y][next.x] = true;
+      if (world->isValidPosition(next)) {
+        if (!hasVisited[next.y][next.x] && !world->getContent(next)) {
+          hasVisited[next.y][next.x] = true;
+          HexagonTile newHex{};
+          newHex.startPosition = curr;
+          newHex.nextPosition = next;
+          cameFrom.push_back(newHex);
+          HexagonTile nextHex{};
+          nextHex.startPosition = next;
+          nextHex.length = thisHex.length += 1;
+          frontier.put(nextHex, nextHex.length + 1);
+        }
+      } else {
         HexagonTile newHex{};
         newHex.startPosition = curr;
         newHex.nextPosition = next;
-        if (!world->isValidPosition(next)) {
-          newHex.isEnd = true;
-          // cameFrom.push_back(newHex);
-          end = true;
-          finalPoint = curr;
-          break;
-        } else {
-          cameFrom.push_back(newHex);
-        }
-
-        HexagonTile nextHex{};
-        nextHex.startPosition = next;
-        nextHex.length = thisHex.length += 1;
-        frontier.put(nextHex, nextHex.length + 1);
+        newHex.isEnd = true;
+        // cameFrom.push_back(newHex);
+        end = true;
+        finalPoint = curr;
+        break;
       }
     }
   } while (!end);
   std::vector<Point2D> path;
   Point2D current = finalPoint;
-  if (cameFrom.back().startPosition == finalPoint) {
+  if (pos == finalPoint) 
+  {
     // point can't be found!
     std::cout << "point cannot be found";
     return pos;
@@ -111,5 +117,11 @@ Point2D Catcher::Move(World* world) {
     path.push_back(current);
     current = GetValue(current, cameFrom);
   }
-  return path[path.size() - 1];
-}
+  if (path.size() == 1) {
+    return path[0];
+  } else 
+  {
+    return path[path.size() / 3];
+  }
+
+};
