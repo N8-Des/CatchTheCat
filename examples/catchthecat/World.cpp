@@ -284,7 +284,6 @@ bool World::catCanMoveToPosition(Point2D p) const {
 }
 bool World::catcherCanMoveToPosition(Point2D p) const {
   auto sideOver2 = sideSize/2;
-<<<<<<< HEAD
   return (p.x!=catPosition.x || p.y != catPosition.y) &&
          abs(p.x) <= sideOver2 &&
          abs(p.y) <= sideOver2;
