@@ -26,20 +26,31 @@ bool World::GetWest(const Point2D& point) {
   return data[Point2DtoIndex(point)+1];
 }
 
-void World::SetNode(const Point2D& point, const Node& node) {
-  // todo implement this
+void World::SetNode(const Point2D& point, const Node& node) 
+{
+    //we can cheat here and use our functions 
+  int index = Point2DtoIndex(point);
+
+  data[index] = node.GetNorth();
+  data[index + 3] = node.GetEast();
+  data[index + (sideSize + 1) * 2] = node.GetSouth();
+  data[index + 1] = node.GetWest();
 }
-void World::SetNorth(const Point2D& point, const bool& state) {
-  // todo implement this
+void World::SetNorth(const Point2D& point, const bool& state) 
+{
+  data[Point2DtoIndex(point)] = state;
 }
 void World::SetEast(const Point2D& point, const bool& state) {
-  // todo implement this
+  data[Point2DtoIndex(point) + 3] = state;
 }
-void World::SetSouth(const Point2D& point, const bool& state) {
-  // todo implement this
+void World::SetSouth(const Point2D& point, const bool& state) 
+{
+   //Aw man this is gonna be scuffed :(
+    //basically a fancy bitwise operation that makes my head hurt. 
+  data[Point2DtoIndex(point) + (sideSize + 1) * 2] = state;
 }
 void World::SetWest(const Point2D& point, const bool& state) {
-  // todo implement this
+  data[Point2DtoIndex(point) + 1] = state;
 }
 
 void World::Start() {
