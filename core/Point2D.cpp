@@ -18,3 +18,6 @@ Point2D &Point2D::operator=(const Point2D &rhs) {
   y = rhs.y;
   return *this;
 }
+Point2D Point2D::operator-(const Point2D& rhs) const {
+  return {x - rhs.x, y - rhs.y};
+}
