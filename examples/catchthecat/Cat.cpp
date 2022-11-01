@@ -56,7 +56,8 @@ struct HexTile {
       return fail;
   };
 
-Point2D Cat::Move(World* world) {
+Point2D Cat::Move(World* world) 
+{
     auto rand = Random::Range(0, 5);
     auto pos = world->getCat();
 
@@ -85,7 +86,6 @@ Point2D Cat::Move(World* world) {
       Point2D arr[6] = {world->E(curr),  world->NE(curr), world->NW(curr),
                         world->SE(curr), world->SW(curr), world->W(curr)};
 
-      int nextAmt = 0;
       // next, go through them all
       for (int i = 0; i < 6; i++) 
       {

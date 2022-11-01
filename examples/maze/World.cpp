@@ -1,9 +1,11 @@
 #include "World.h"
 #include "generators/RecursiveBacktracker.h"
+#include "generators/Prims.h"
+
 #include <chrono>
 World::World(Engine* pEngine, int size=11): GameObject(pEngine), sideSize(size) {
   generators.push_back(new MazeGenerator());
-  generators.push_back(new RecursiveBacktracker());
+  generators.push_back(new PrimsAlgorithm());
 }
 
 World::~World(){
@@ -35,6 +37,12 @@ bool World::GetSouth(const Point2D& point) {
 
 bool World::GetWest(const Point2D& point) {
   return data[Point2DtoIndex(point)+1];
+}
+
+bool World::IsValidPosition(const Point2D& point) 
+{
+  auto halfside = sideSize / 2;
+  return abs(point.x) <= halfside && abs(point.y) <= halfside;
 }
 
 
@@ -156,7 +164,8 @@ void World::Update(float deltaTime){
   if(isSimulating) {
     // update timer
     timeForNextTick -= deltaTime;
-    if (timeForNextTick < 0) {
+    if (timeForNextTick <= 0) 
+    {
       step();
       timeForNextTick = timeBetweenAITicks;
     }
@@ -182,7 +191,7 @@ void World::Clear() {
   colors.clear();
   colors.resize(sideSize*sideSize);
   for(int i=0; i<sideSize*sideSize; i++)
-    colors[i] = (Color::Gray).Dark();
+    colors[i] = (Color::Black).Dark();
 
   // clear maze generators
   for(int i=0;i<generators.size(); i++)
@@ -195,14 +204,16 @@ void World::Clear() {
 
 void World::step() {
   auto start = std::chrono::high_resolution_clock::now();
-  if(!generators[generatorId]->Step(this)) {
+  if(!generators[generatorId]->Step(this)) 
+  {
     isSimulating = false;
   }
   auto stop = std::chrono::high_resolution_clock::now();
   moveDuration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
   totalTime+=moveDuration;
 }
-void World::SetNodeColor(const Point2D& node, const Color32& color) {
+void World::SetNodeColor(const Point2D& node, const Color32& color) 
+{
   colors[(node.y+sideSize/2)*sideSize+node.x+sideSize/2] = color;
 }
 

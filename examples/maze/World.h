@@ -42,6 +42,8 @@ class World: GameObject {
   bool GetEast(const Point2D& point);
   bool GetSouth(const Point2D& point);
   bool GetWest(const Point2D& point);
+  bool IsValidPosition(const Point2D& point);
+
 
   void SetNode(const Point2D& point, const Node& node);
   void SetNorth(const Point2D& point, const bool& state);
