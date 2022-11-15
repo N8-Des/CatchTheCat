@@ -3,9 +3,9 @@
 struct NoiseGeneration 
 {
   float noise(float x, float y, float z, std::vector<int> n) {
-    int X = (int)floor(x) & 255,
-        Y = (int)floor(y) & 255, 
-        Z = (int)floor(z) & 255;
+    int X = (int)floor(x) & 255;
+    int Y = (int)floor(y) & 255; 
+    int Z = (int)floor(z) & 255;
     //floor to get relative point.
     x -= floor(x);  
     y -= floor(y);  

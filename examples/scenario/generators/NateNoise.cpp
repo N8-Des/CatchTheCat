@@ -1,6 +1,7 @@
 #include <random>
 #include "NateNoise.h"
 #include <cmath>
+#include <iostream>
 
 std::string NateNoise::GetName() 
 {    
@@ -8,62 +9,7 @@ std::string NateNoise::GetName()
 }
 
 //create a gradient to supplement the existing gradient.
-uint32_t rgb(double ratio, int color) 
-{
-    //kinda big by default so Im gonna turn it into regions. 
-  int normalized = int(ratio * 256 * 6);
-  int region = normalized / 256;
-  int x = normalized % 256;
-  //this is *basically* a color ramp from Blender! My specialty!
-  int r = 0, g = 0, b = 0;
-  switch (region) {
-    case 0:
-      r = 0;
-      g = 20;
-      b = 210;
-      g += x;
-      break;
-    case 1:
-      r = 237;
-      g = 225;
-      b = 161;
-      r -= x;
-      break;
-    case 2:
-      r = 148;
-      g = 109;
-      b = 80;
-      b += x;
-      break;
-    case 3:
-      r = 30;
-      g = 200;
-      b = 10;
-      g -= x;
-      break;
-    case 4:
-      r = 35;
-      g = 180;
-      b = 10;
-      r += x;
-      break;
-    case 5:
-      r = 50;
-      g = 222;
-      b = 0;
-      b -= x;
-      break;
-  }
-  if (color == 0) 
-  {
-    return r;
-  }
-  if (color == 1) 
-  {
-    return g;
-  }
-  return b;
-}
+
 
 std::vector<Color32> NateNoise::Generate(int sideSize, float displacement) {
   int seed = 1501;
@@ -73,7 +19,8 @@ std::vector<Color32> NateNoise::Generate(int sideSize, float displacement) {
   for (int i = 0; i < 256; i++) {
     vect[i] = i;
   }
-  siv::BasicPerlinNoise<float> noise;
+  //siv::BasicPerlinNoise<float> noise;
+  NoiseGeneration noise;
   // hey its a random engine, learned about this and figured i would give it a shot.
 
   std::default_random_engine engine(seed);
@@ -84,24 +31,95 @@ std::vector<Color32> NateNoise::Generate(int sideSize, float displacement) {
 
   int pixelOn = 0;
   //now use the noise to generate the image.
+  Color32 pastColor(0, 0, 0);
   for (int l = 0; l < sideSize; l++) {
     for (int c = 0; c < sideSize; c++) 
     {
       float x = (float)l / ((float)sideSize);
       float y = (float)c / ((float)sideSize);
-      float n = abs(noise.octave3D(x * 5, y * 5, displacement, 1));
+      float n = abs(noise.noise(x * 10, y * 10, displacement, vect));
 
+      // change colors!
       Color32 col;
-      col.r = rgb(n, 0);
-      col.g = rgb(n, 1);
-      col.b = rgb(n, 2);
-      //change colors!
-
-
+      col.r = n * 255;
+      col.g = n * 255;
+      col.b = n * 255;
+      if (col.r < 50) 
+      {
+        col.r = 10;
+        col.g = 50;
+        col.b = 200;
+      } 
+      else if (col.r < 75) 
+      {
+        col.r = 219;
+        col.g = 219;
+        col.b = 132;
+      }else 
+      {
+        col.r = 113;
+        col.g = 148;
+        col.b = 96;
+      }
       colorReturn.emplace_back(col);
       pixelOn++;
+      pastColor = col;
     }
+
   }
+  //attempted lerping. It didn't work. 
+  /* for (int i = 0; i < colorReturn.size(); i++) 
+  {
+    Color32 lerpCol; 
+    //right
+    if (i - 1 < 0) 
+    {
+      lerpCol = colorReturn[i];
+    }
+    else 
+    {
+      lerpCol = colorReturn[i - 1];
+    }
+    colorReturn[i].r = abs(colorReturn[i].r - lerpCol.r) * 0.5 + colorReturn[i].r;
+    colorReturn[i].g = abs(colorReturn[i].g - lerpCol.g) * 0.5 + colorReturn[i].g;
+    colorReturn[i].b = abs(colorReturn[i].b - lerpCol.b) * 0.5 + colorReturn[i].b;
+    //top
+    if (i - sideSize < 0) 
+    {
+      lerpCol = colorReturn[i];
+    } 
+    else 
+    {
+      lerpCol = colorReturn[i - sideSize];
+    }
+    colorReturn[i].r = abs(colorReturn[i].r - lerpCol.r) * 0.5 + colorReturn[i].r;
+    colorReturn[i].g = abs(colorReturn[i].g - lerpCol.g) * 0.5 + colorReturn[i].g;
+    colorReturn[i].b = abs(colorReturn[i].b - lerpCol.b) * 0.5 + colorReturn[i].b;
+    //left
+    if (i + 1 >= vect.size()) 
+    {
+      lerpCol = colorReturn[i];
+    }
+    else 
+    {
+      lerpCol = colorReturn[i + 1];
+    }
+    colorReturn[i].r = abs(colorReturn[i].r - lerpCol.r) * 0.5 + colorReturn[i].r;
+    colorReturn[i].g = abs(colorReturn[i].g - lerpCol.g) * 0.5 + colorReturn[i].g;
+    colorReturn[i].b = abs(colorReturn[i].b - lerpCol.b) * 0.5 + colorReturn[i].b;
+    //bottom
+    if (i + sideSize >= vect.size()) 
+    {
+      lerpCol = colorReturn[i];
+    } 
+    else 
+    {
+      lerpCol = colorReturn[i + sideSize];
+    }
+    colorReturn[i].r = abs(colorReturn[i].r - lerpCol.r) * 0.5 + colorReturn[i].r;
+    colorReturn[i].g = abs(colorReturn[i].g - lerpCol.g) * 0.5 + colorReturn[i].g;
+    colorReturn[i].b = abs(colorReturn[i].b - lerpCol.b) * 0.5 + colorReturn[i].b;
+  }*/
   return colorReturn;
 }
 
