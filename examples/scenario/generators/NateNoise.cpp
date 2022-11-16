@@ -8,8 +8,46 @@ std::string NateNoise::GetName()
     return "Nate Noise"; 
 }
 
+struct GradientSegment
+{
+  float percent;
+  Color32 color;
+};
 //create a gradient to supplement the existing gradient.
+Color32 rgb(float ratio) 
+{
+    ratio /= 100;
+    // kinda big by default so Im gonna turn it into regions.
+    GradientSegment colors[5];
+    colors[0].color = Color32(7, 60, 136);
+    colors[0].percent = 0;
 
+    colors[1].color = Color32(11, 70, 200);
+    colors[1].percent = 0.2;
+
+    colors[2].color = Color32(220, 198, 0);
+    colors[2].percent = 0.4;
+
+    colors[3].color = Color32(45, 200, 80);
+    colors[3].percent = 0.6;
+
+    colors[4].color = Color32(20, 110, 30);
+    colors[4].percent = 1;
+    
+    Color32 finalColor;
+    for (int i = 0; i < 5; i++)
+    {
+        if (colors[i].percent <= ratio && colors[i + 1].percent >= ratio)
+        {
+            float lerpTime = ratio / colors[i + 1].percent;
+            finalColor.r = colors[i].color.r + lerpTime * (colors[i + 1].color.r - colors[i].color.r);
+            finalColor.g = colors[i].color.g + lerpTime * (colors[i + 1].color.g - colors[i].color.g);
+            finalColor.b = colors[i].color.b + lerpTime * (colors[i + 1].color.b - colors[i].color.b);
+            return finalColor;
+        }
+    }
+    return finalColor;
+}
 
 std::vector<Color32> NateNoise::Generate(int sideSize, float displacement) 
 {
@@ -20,8 +58,8 @@ std::vector<Color32> NateNoise::Generate(int sideSize, float displacement)
   for (int i = 0; i < 256; i++) {
     vect[i] = i;
   }
-
-  NoiseGeneration noise;
+  siv::BasicPerlinNoise<float> noise;
+  //NoiseGeneration noise;
   // hey its a random engine, learned about this and figured i would give it a shot.
 
   std::default_random_engine engine(seed);
@@ -35,43 +73,23 @@ std::vector<Color32> NateNoise::Generate(int sideSize, float displacement)
   for (int l = 0; l < sideSize; l++) {
     for (int c = 0; c < sideSize; c++) 
     {
-      float x = (float)l / ((float)sideSize);
-      float y = (float)c / ((float)sideSize);
-
       //generate the noise!
-      float n = abs(noise.noise(x * 33, y * 33, displacement, vect)) * 255 -
-                abs(noise.noise(x * 55, y * 55, displacement, vect)) * 255;
+      float n = (abs(noise.octave3D(c / 50.0, l / 50.0, displacement, 3)) - abs(noise.octave3D(c / 136.0, l / 136.0, displacement, 10))) * 255;
+            
       //square the gradient!
-      float xd = 2 * (float)l / ((float)sideSize) - 1;
-      float yd = 2 * (float)c / ((float)sideSize) - 1;
-      float d = 1 - ((1 - (xd * xd)) * (1 - (yd * yd)));
-      n = (n + ((1 - d) * 255)) / 2;
-      // change colors!
+      float x = 2 * (float)l / ((float)sideSize) - 1;
+      float y = 2 * (float)c / ((float)sideSize) - 1;
+      float d = 1 - ((1 - (x * x)) * (1 - (y * y)));
+      n = abs(n + ((1 - d) * 255)) / 4;
+      //change colors!
       Color32 col;
       col.r = n;
       col.g = n;
       col.b = n;
       col.a = n;
-      if (n < 39) 
-      {
-        col.r = 11;
-        col.g = 70;
-        col.b = 200;
-      } 
-      else if (n < 50)
-      {
-        col.r = 220;
-        col.g = 198;
-        col.b = 0;
-      }else 
-      {
-        col.r = 45;
-        col.g = 200;
-        col.b = 80;
-      }
+      col = rgb(n);
       colorReturn.emplace_back(col);
     }
-
   }
   //attempted lerping. It didn't work. 
   /* for (int i = 0; i < colorReturn.size(); i++) 
